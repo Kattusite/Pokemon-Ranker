@@ -47,20 +47,8 @@ def getgeneration():
     generation = generationzoom.get('title')
     return generation
 
-
-
-print (indexposition)
-try:
-    print(getnametr())
-except:
-    print(getnametd())
-indexposition += 1
-
-
-
-
-
-
-
-
-
+def getname():
+    try:
+        return getnametr()
+    except:
+        return getnametd()
