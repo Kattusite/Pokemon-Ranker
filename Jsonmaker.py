@@ -8,8 +8,7 @@ import timeit
 index = "https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_National_Pok%C3%A9dex_number"
 website = requests.get(index)
 table = BeautifulSoup(website.content,"html.parser")
-indexposition = 123
-#for number in range (1,1000):
+indexposition = 552
 #retrieves the link to the pokemon's individual page from the table
 row = table.find_all('tr')[indexposition]                                                                                                              
 rawlink = row.find_all('a')[0]
@@ -21,15 +20,27 @@ attributes = BeautifulSoup(pokemon.content,"html.parser")
 #gets the pokemon name if the article uses td formatting
 def getname():
     nameraw = attributes.find_all('b')[1]
-    name = nameraw
+    name = nameraw.get_text()
     return name
 
-#gets the pokemon's types
-def gettype():
-    typeraw = attributes.find_all('tr')[16]
-    typezoom = typeraw.find_all('b')
-    type = str(typezoom).replace("[",'').replace("]",'').replace("<",'').replace(">",'').replace("b",'').replace("/",'')
+#gets the pokemon's primary type
+def gettype1():
+    typeraw = attributes.find_all('b')[4]
+    type = typeraw.get_text()
     return type
+
+#gets the pokemon's secondary type
+
+def gettype2():
+    typeraw = attributes.find_all('b')[5]
+    type = typeraw.get_text()
+    return type
+
+
+def getcategory():
+    categoryraw = attributes.find_all('span')[5]
+    category = categoryraw.get_text()
+    return category
 
 #gets the pokemon's generation
 def getgeneration():
@@ -44,3 +55,13 @@ def tryname():
         return getname()
     except:
         pass
+
+#easy way for me to parse through all the different tags of a page, for debugging purposes only
+def attributesearch(targettag):
+    for item in range (1,100):
+        generation = attributes.find_all(targettag)[item]
+        print ('----------------------------')
+        print (item)
+        print (generation)
+
+attributesearch("span")
