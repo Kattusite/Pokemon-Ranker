@@ -3,60 +3,55 @@ from bs4.element import Stylesheet
 import requests
 from bs4 import BeautifulSoup
 import timeit
-
 #imports a table of every pokemon and their number from bulbapedia
-index = "https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_National_Pok%C3%A9dex_number"
-website = requests.get(index)
-table = BeautifulSoup(website.content,"html.parser")
-indexposition = 231
-# I need to loop through many pokemon to test them. I made the program a 1 round loop in order to avoid indenting everything whenever I need to put the code in a loop.
-for item in range (1,2):
-    #retrieves the link to the pokemon's individual page from the table
-    row = table.find_all('tr')[indexposition]
-    #skips the table rows of regional dividers
-    try:
-        rowtester()
-    except:
-        indexposition +=1
-        row = table.find_all('tr')[indexposition]
-        pass                                                                                                            
-    rawlink = row.find_all('a')[0]
-    link = "https://bulbapedia.bulbagarden.net/" + str(rawlink.get('href'))
-    #the values containing the pokemon's page  
-    pokemon = requests.get(link)
-    attributes = BeautifulSoup(pokemon.content,"html.parser")
-
-    def rowtester():
-        regionalnumber = row.find_all("a")[1]
-        return regionalnumber
+website = "https://bulbapedia.bulbagarden.net/wiki/Bulbasaur_(Pok%C3%A9mon)"
+for item in range (1,20):
+    currentpage = requests.get(website)
+    pagecontent = BeautifulSoup(currentpage.content,"html.parser")
+    nextpagelink = pagecontent.find_all('a')[86]
+    nextpageaddress = "https://bulbapedia.bulbagarden.net/" + str(nextpagelink.get('href'))
 
     def getname():
-        nameraw = attributes.find_all('b')[1]
+        nameraw = pagecontent.find_all('b')[1]
         name = nameraw.get_text()
         return name
 
-    def getnumber():
-        numberraw = row.find_all("td")[1]
-        number = numberraw.get_text().strip('#').strip()
-        return number
-
     def gettype1():
-        typeraw = attributes.find_all('b')[4]
+        typeraw = pagecontent.find_all('b')[4]
         type = typeraw.get_text()
         return type
 
     def gettype2():
-        typeraw = attributes.find_all('b')[5]
+        typeraw = pagecontent.find_all('b')[5]
         type = typeraw.get_text()
         return type
 
+    #returns a list containing main abilities and a list containing hidden abilities
+    def getability():
+        abilitylist = []
+        abilitysearch = pagecontent.find("span", string="Abilities")
+        parent1 = abilitysearch.parent
+        parent2 = parent1.parent
+        parent3 = parent2.parent
+        allabilities = parent3.find_all('span')
+        for ability in allabilities:
+            #is this spaghetti?
+            abilityrefine = ability.get_text().replace('Hidden Ability','').strip().replace('\xa0','')
+            abilitysplit = abilityrefine.split('or ',1)
+            #for some reason there are invisible td tags containing "Cocophony" in every single ability table row
+            if abilitysplit != ['Cacophony']:
+                abilitylist.append(abilitysplit)
+        #This code retrieves all the text in span tags in the row. Since the first span tag will always contain "abilities" the code always deletes the first list item
+        del abilitylist [0]
+        return (abilitylist)
+
     def getcategory():
-        categoryraw = attributes.find_all('span')[5]
+        categoryraw = pagecontent.find_all('span')[5]
         category = categoryraw.get_text()
         return category
 
     def getheight():
-        heightsearch = attributes.find("span", string="Height")
+        heightsearch = pagecontent.find("span", string="Height")
         parent1 = heightsearch.parent
         parent2 = parent1.parent
         parent3 = parent2.parent
@@ -65,7 +60,7 @@ for item in range (1,2):
         return (height)
 
     def getweight():
-        weightsearch = attributes.find("span", string="Weight")
+        weightsearch = pagecontent.find("span", string="Weight")
         parent1 = weightsearch.parent
         parent2 = parent1.parent
         parent3 = parent2.parent
@@ -75,7 +70,7 @@ for item in range (1,2):
 
     def getcolor():
 
-        colorsearch = attributes.find("span", string="Pokédex color")
+        colorsearch = pagecontent.find("span", string="Pokédex color")
         parent1 = colorsearch.parent
         parent2 = parent1.parent
         parent3 = parent2.parent
@@ -84,8 +79,20 @@ for item in range (1,2):
         colorclear = color.replace("Other forms may have other colors.","")
         return(colorclear)
 
+    def getegg():
+        try:
+            eggsearch = pagecontent.find("span", string="Egg Group")
+        except:
+                eggsearch = pagecontent.find("span", string="Egg Groups")
+        parent1 = eggsearch.parent
+        parent2 = parent1.parent
+        parent3 = parent2.parent
+        eggraw = parent3.findAll("a")
+        egg = eggraw.get_text().strip()
+        return (egg)
+        
     def getgeneration():
-        generationraw = attributes.find_all('p')[1]
+        generationraw = pagecontent.find_all('p')[1]
         generationzoom = generationraw.find_all('a')[3]
         generation = generationzoom.get('title')
         return generation
@@ -93,13 +100,12 @@ for item in range (1,2):
     #easy way for me to parse through all the different tags of a page, for debugging purposes only
     def attributesearch(targettag):
         for item in range (1,100):
-            generation = attributes.find_all(targettag)[item]
+            generation = pagecontent.find_all(targettag)[item]
             print ('----------------------------')
             print (item)
             print (generation)
 
     def getall():
-        print (getnumber())
         print (getname())
         print (gettype1()), print (gettype2())
         print (getcategory())
@@ -107,16 +113,11 @@ for item in range (1,2):
         print (getweight())
         print('------------------------------')
 
-    #attributesearch("a")
-    #getall()
-    #indexposition+=1
+    getall()
+    website = nextpageaddress
 
-    abilitysearch = attributes.find("span", string="Abilities")
-    parent1 = abilitysearch.parent
-    parent2 = parent1.parent
-    parent3 = parent2.parent
-    allabilities = parent3.find_all('td')
-    for ability in allabilities:
-        ability = ability.get_text()
-        if ability != "Cacophony":
-            print (ability)
+    #attributesearch('href')
+
+    print (nextpageaddress)
+
+
