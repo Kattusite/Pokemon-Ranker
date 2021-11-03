@@ -4,24 +4,24 @@ import requests
 from bs4 import BeautifulSoup
 import timeit
 #imports a table of every pokemon and their number from bulbapedia
-website = "https://bulbapedia.bulbagarden.net/wiki/Bulbasaur_(Pok%C3%A9mon)"
-for item in range (1,20):
+website = "https://bulbapedia.bulbagarden.net/wiki/Togetic_(Pok%C3%A9mon)"
+for item in range (0,100):
     currentpage = requests.get(website)
     pagecontent = BeautifulSoup(currentpage.content,"html.parser")
     nextpagelink = pagecontent.find_all('a')[86]
     nextpageaddress = "https://bulbapedia.bulbagarden.net/" + str(nextpagelink.get('href'))
 
-    def getname():
+    def get_name():
         nameraw = pagecontent.find_all('b')[1]
         name = nameraw.get_text()
         return name
 
-    def gettype1():
+    def get_primary_type():
         typeraw = pagecontent.find_all('b')[4]
         type = typeraw.get_text()
         return type
 
-    def gettype2():
+    def get_secondary_type():
         typeraw = pagecontent.find_all('b')[5]
         type = typeraw.get_text()
         return type
@@ -45,12 +45,12 @@ for item in range (1,20):
         del abilitylist [0]
         return (abilitylist)
 
-    def getcategory():
+    def get_category():
         categoryraw = pagecontent.find_all('span')[5]
         category = categoryraw.get_text()
         return category
 
-    def getheight():
+    def get_height():
         heightsearch = pagecontent.find("span", string="Height")
         parent1 = heightsearch.parent
         parent2 = parent1.parent
@@ -59,7 +59,7 @@ for item in range (1,20):
         height = heightraw.get_text().strip()
         return (height)
 
-    def getweight():
+    def get_weight():
         weightsearch = pagecontent.find("span", string="Weight")
         parent1 = weightsearch.parent
         parent2 = parent1.parent
@@ -68,7 +68,7 @@ for item in range (1,20):
         weight = weightraw.get_text().strip()
         return (weight)
 
-    def getcolor():
+    def get_color():
 
         colorsearch = pagecontent.find("span", string="Pokédex color")
         parent1 = colorsearch.parent
@@ -79,19 +79,22 @@ for item in range (1,20):
         colorclear = color.replace("Other forms may have other colors.","")
         return(colorclear)
 
-    def getegg():
-        try:
+    def get_egg_group():
+        egggroups = []
+        eggsearch = pagecontent.find("span", string="Egg Groups")
+        if str(eggsearch) == 'None':
             eggsearch = pagecontent.find("span", string="Egg Group")
-        except:
-                eggsearch = pagecontent.find("span", string="Egg Groups")
         parent1 = eggsearch.parent
         parent2 = parent1.parent
         parent3 = parent2.parent
-        eggraw = parent3.findAll("a")
-        egg = eggraw.get_text().strip()
-        return (egg)
+        eggraw = parent3.find_all("span")
+        for span in eggraw:
+            span = span.get_text().strip()
+            if (span != "Egg Group") and (span != "Egg Groups"):
+                egggroups.append(span)
+        return(egggroups)
         
-    def getgeneration():
+    def get_generation():
         generationraw = pagecontent.find_all('p')[1]
         generationzoom = generationraw.find_all('a')[3]
         generation = generationzoom.get('title')
@@ -99,25 +102,20 @@ for item in range (1,20):
 
     #easy way for me to parse through all the different tags of a page, for debugging purposes only
     def attributesearch(targettag):
-        for item in range (1,100):
+        for item in range (0,30):
             generation = pagecontent.find_all(targettag)[item]
             print ('----------------------------')
             print (item)
             print (generation)
 
     def getall():
-        print (getname())
-        print (gettype1()), print (gettype2())
-        print (getcategory())
-        print (getheight())
-        print (getweight())
+        print (get_name())
+        print (get_primary_type()), print (get_secondary_type())
+        print (get_category())
+        print (get_height())
+        print (get_weight())
+        print (get_egg_group())
         print('------------------------------')
-
-    getall()
-    website = nextpageaddress
-
-    #attributesearch('href')
-
-    print (nextpageaddress)
-
-
+    
+    #generation = pagecontent.find_all('table')[59]
+    #print(generation)
