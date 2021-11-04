@@ -1,14 +1,17 @@
+import re
 from typing import Text
 from bs4.element import Stylesheet
 import requests
 from bs4 import BeautifulSoup
-import timeit
 #imports a table of every pokemon and their number from bulbapedia
-website = "https://bulbapedia.bulbagarden.net/wiki/Togetic_(Pok%C3%A9mon)"
-for item in range (0,100):
+website = "https://bulbapedia.bulbagarden.net/wiki/Bulbasaur_(Pok%C3%A9mon)"
+for item in range (1,2):
     currentpage = requests.get(website)
     pagecontent = BeautifulSoup(currentpage.content,"html.parser")
-    nextpagelink = pagecontent.find_all('a')[86]
+    #this code searches for the national dex link at the top of the page then scrolls down to the next link
+    nextpagelink = pagecontent.find('a', string = 'Pokémon')
+    nextpagelink = nextpagelink.next_element.next_element.next_element.next_element.next_element.next_element.next_element.next_element
+    nextpagelink = nextpagelink.find_all('a')[0]
     nextpageaddress = "https://bulbapedia.bulbagarden.net/" + str(nextpagelink.get('href'))
 
     def get_name():
@@ -26,23 +29,19 @@ for item in range (0,100):
         type = typeraw.get_text()
         return type
 
-    #returns a list containing main abilities and a list containing hidden abilities
-    def getability():
+    def get_ability():
         abilitylist = []
         abilitysearch = pagecontent.find("span", string="Abilities")
+        if str(abilitysearch) == 'None':
+            abilitysearch = pagecontent.find("span", string="Ability")
         parent1 = abilitysearch.parent
         parent2 = parent1.parent
         parent3 = parent2.parent
-        allabilities = parent3.find_all('span')
-        for ability in allabilities:
-            #is this spaghetti?
-            abilityrefine = ability.get_text().replace('Hidden Ability','').strip().replace('\xa0','')
-            abilitysplit = abilityrefine.split('or ',1)
-            #for some reason there are invisible td tags containing "Cocophony" in every single ability table row
-            if abilitysplit != ['Cacophony']:
-                abilitylist.append(abilitysplit)
-        #This code retrieves all the text in span tags in the row. Since the first span tag will always contain "abilities" the code always deletes the first list item
-        del abilitylist [0]
+        allabilities = parent3.find_all('td')[0]
+        isolatedabilities = allabilities.find_all('a')
+        for ability in isolatedabilities:
+            abilityrefined = ability.get_text().replace('\xa0','').replace('\n','')
+            abilitylist.append(abilityrefined)
         return (abilitylist)
 
     def get_category():
@@ -95,9 +94,14 @@ for item in range (0,100):
         return(egggroups)
         
     def get_generation():
-        generationraw = pagecontent.find_all('p')[1]
-        generationzoom = generationraw.find_all('a')[3]
-        generation = generationzoom.get('title')
+        #Finds the substring "introduced in" and then returns the next X characters
+        #firstparagraph is raw html and not the paragraph itself 
+        firstparagraph = pagecontent.find_all('p')[1].get_text()
+        Target_text_raw = re.search ('introduced in', str(firstparagraph))
+        startmarker = (Target_text_raw.span()[-1]) + 1
+        endmarker = startmarker + 14
+        clippedparagraph = str(firstparagraph)[startmarker:endmarker]
+        generation = clippedparagraph.replace('.','').strip()
         return generation
 
     #easy way for me to parse through all the different tags of a page, for debugging purposes only
@@ -111,11 +115,14 @@ for item in range (0,100):
     def getall():
         print (get_name())
         print (get_primary_type()), print (get_secondary_type())
+        print (get_generation())
+        print (get_ability())
         print (get_category())
         print (get_height())
         print (get_weight())
         print (get_egg_group())
+        print (get_color())
         print('------------------------------')
+        
+    website = nextpageaddress
     
-    #generation = pagecontent.find_all('table')[59]
-    #print(generation)
