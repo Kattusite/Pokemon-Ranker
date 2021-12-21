@@ -2,11 +2,12 @@ import re
 from typing import Text
 from bs4.element import Stylesheet
 import requests
+import json
 from bs4 import BeautifulSoup
 space = " "
 #imports a table of every pokemon and their number from bulbapedia
 website = "https://bulbapedia.bulbagarden.net/wiki/Bulbasaur_(Pok%C3%A9mon)"
-for item in range (1,200):
+while space == " ":
     currentpage = requests.get(website)
     pagecontent = BeautifulSoup(currentpage.content,"html.parser")
     #this code searches for the national dex link at the top of the page then scrolls down to the next link
@@ -14,7 +15,7 @@ for item in range (1,200):
     nextpagelink = nextpagelink.next_element.next_element.next_element.next_element.next_element.next_element.next_element.next_element
     nextpagelink = nextpagelink.find_all('a')[0]
     nextpageaddress = "https://bulbapedia.bulbagarden.net/" + str(nextpagelink.get('href'))
-
+    
     def get_name():
         nameraw = pagecontent.find_all('p')[0]
         nametext = nameraw.get_text()
@@ -125,7 +126,22 @@ for item in range (1,200):
         print (get_egg_group())
         print (get_color())
         print('------------------------------')
-        
-    print (getall())
+         
+    class Pokemon:
+        name = (get_name())
+        primary_type = (get_primary_type())
+        secondary_type = (get_secondary_type())
+        generation = (get_generation())
+        ability = (get_ability())
+        category = (get_category())
+        height = (get_height())
+        weight = (get_weight())
+        egg_group = (get_egg_group())
+        color = (get_color())
+
+    print (get_name())
     website = nextpageaddress
-    
+
+    if nextpageaddress == "https://bulbapedia.bulbagarden.net//wiki/Bulbasaur_(Pok%C3%A9mon)":
+        break
+
