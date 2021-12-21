@@ -3,9 +3,10 @@ from typing import Text
 from bs4.element import Stylesheet
 import requests
 from bs4 import BeautifulSoup
+space = " "
 #imports a table of every pokemon and their number from bulbapedia
 website = "https://bulbapedia.bulbagarden.net/wiki/Bulbasaur_(Pok%C3%A9mon)"
-for item in range (1,2):
+for item in range (1,200):
     currentpage = requests.get(website)
     pagecontent = BeautifulSoup(currentpage.content,"html.parser")
     #this code searches for the national dex link at the top of the page then scrolls down to the next link
@@ -15,17 +16,18 @@ for item in range (1,2):
     nextpageaddress = "https://bulbapedia.bulbagarden.net/" + str(nextpagelink.get('href'))
 
     def get_name():
-        nameraw = pagecontent.find_all('b')[1]
-        name = nameraw.get_text()
+        nameraw = pagecontent.find_all('p')[0]
+        nametext = nameraw.get_text()
+        name = nametext.split(space, 1)[0]
         return name
 
     def get_primary_type():
-        typeraw = pagecontent.find_all('b')[4]
+        typeraw = pagecontent.find_all('b')[5]
         type = typeraw.get_text()
         return type
 
     def get_secondary_type():
-        typeraw = pagecontent.find_all('b')[5]
+        typeraw = pagecontent.find_all('b')[6]
         type = typeraw.get_text()
         return type
 
@@ -96,7 +98,7 @@ for item in range (1,2):
     def get_generation():
         #Finds the substring "introduced in" and then returns the next X characters
         #firstparagraph is raw html and not the paragraph itself 
-        firstparagraph = pagecontent.find_all('p')[1].get_text()
+        firstparagraph = pagecontent.find_all('p')[0].get_text()
         Target_text_raw = re.search ('introduced in', str(firstparagraph))
         startmarker = (Target_text_raw.span()[-1]) + 1
         endmarker = startmarker + 14
@@ -124,5 +126,6 @@ for item in range (1,2):
         print (get_color())
         print('------------------------------')
         
+    print (getall())
     website = nextpageaddress
     
