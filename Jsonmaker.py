@@ -4,13 +4,16 @@ from bs4.element import Stylesheet
 import requests
 import json
 from bs4 import BeautifulSoup
+import os.path
+list = {}
+dexnumber = 1
 space = " "
+print ("Generating List")
 #imports a table of every pokemon and their number from bulbapedia
 website = "https://bulbapedia.bulbagarden.net/wiki/Bulbasaur_(Pok%C3%A9mon)"
 while space == " ":
     currentpage = requests.get(website)
     pagecontent = BeautifulSoup(currentpage.content,"html.parser")
-    #this code searches for the national dex link at the top of the page then scrolls down to the next link
     nextpagelink = pagecontent.find('a', string = 'Pokémon')
     nextpagelink = nextpagelink.next_element.next_element.next_element.next_element.next_element.next_element.next_element.next_element
     nextpagelink = nextpagelink.find_all('a')[0]
@@ -58,8 +61,8 @@ while space == " ":
         parent2 = parent1.parent
         parent3 = parent2.parent
         heightraw = parent3.findAll("td")[0]
-        height = heightraw.get_text().strip()
-        return (height)
+        height = heightraw.get_text().strip().replace('\\','')
+        return str(height)
 
     def get_weight():
         weightsearch = pagecontent.find("span", string="Weight")
@@ -97,51 +100,41 @@ while space == " ":
         return(egggroups)
         
     def get_generation():
-        #Finds the substring "introduced in" and then returns the next X characters
-        #firstparagraph is raw html and not the paragraph itself 
+        #finds the first paragraph on the page
         firstparagraph = pagecontent.find_all('p')[0].get_text()
+        #finds the string "introduced in" in the first paragraph
         Target_text_raw = re.search ('introduced in', str(firstparagraph))
+        #isolates the "introduced in" substring
         startmarker = (Target_text_raw.span()[-1]) + 1
+        #adds the next 14 characters (the data we want) to the isolated "introduced in"
         endmarker = startmarker + 14
+        #removes the "introduced in" from the combined string
         clippedparagraph = str(firstparagraph)[startmarker:endmarker]
         generation = clippedparagraph.replace('.','').strip()
         return generation
 
-    #easy way for me to parse through all the different tags of a page, for debugging purposes only
-    def attributesearch(targettag):
-        for item in range (0,30):
-            generation = pagecontent.find_all(targettag)[item]
-            print ('----------------------------')
-            print (item)
-            print (generation)
+    pokedict = {
+        "Name" : get_name(),
+        "National Dex Number" : dexnumber,
+        "Primary Type" : get_primary_type(),
+        "Secondary Type" : get_secondary_type(),
+        "Generation" : get_generation(),
+        "Ability" : get_ability(),
+        "Category" : get_category(),
+        "Height" : get_height(),
+        "Weight" : get_weight(),
+        "Egg Group" : get_egg_group(),
+        "Color" : get_color(),
+    }
 
-    def getall():
-        print (get_name())
-        print (get_primary_type()), print (get_secondary_type())
-        print (get_generation())
-        print (get_ability())
-        print (get_category())
-        print (get_height())
-        print (get_weight())
-        print (get_egg_group())
-        print (get_color())
-        print('------------------------------')
-         
-    class Pokemon:
-        name = (get_name())
-        primary_type = (get_primary_type())
-        secondary_type = (get_secondary_type())
-        generation = (get_generation())
-        ability = (get_ability())
-        category = (get_category())
-        height = (get_height())
-        weight = (get_weight())
-        egg_group = (get_egg_group())
-        color = (get_color())
-
-    print (get_name())
+    list[dexnumber] = pokedict
     website = nextpageaddress
+    dexnumber += 1
 
     if nextpageaddress == "https://bulbapedia.bulbagarden.net//wiki/Bulbasaur_(Pok%C3%A9mon)":
         break
+ 
+with open('list.json', 'w') as f:
+    json.dump (list, f, indent=1)
+print ('Done')
 
