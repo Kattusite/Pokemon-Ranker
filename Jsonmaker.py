@@ -1,4 +1,5 @@
 import re
+import string
 from typing import Text
 from bs4.element import Stylesheet
 import requests
@@ -27,17 +28,16 @@ def jsonmake():
             return name
 
         def get_primary_type():
-            typeraw = pagecontent.find_all('b')[5]
+            typeraw = pagecontent.find_all('b')[4]
             type = typeraw.get_text()
             return type
 
         def get_secondary_type():
-            typeraw = pagecontent.find_all('b')[6]
+            typeraw = pagecontent.find_all('b')[5]
             type = typeraw.get_text()
             return type
 
-        def get_ability():
-            abilitylist = []
+        def get_primary_ability():
             abilitysearch = pagecontent.find("span", string="Abilities")
             if str(abilitysearch) == 'None':
                 abilitysearch = pagecontent.find("span", string="Ability")
@@ -46,10 +46,38 @@ def jsonmake():
             parent3 = parent2.parent
             allabilities = parent3.find_all('td')[0]
             isolatedabilities = allabilities.find_all('a')
-            for ability in isolatedabilities:
-                abilityrefined = ability.get_text().replace('\xa0','').replace('\n','')
-                abilitylist.append(abilityrefined)
-            return (abilitylist)
+            primaryability = isolatedabilities[0]
+            primaryabilityrefined = primaryability.get_text().replace('\xa0','').replace('\n','')
+            return (primaryabilityrefined)
+
+        def get_secondary_ability():
+            abilitysearch = pagecontent.find("span", string="Abilities")
+            if str(abilitysearch) == 'None':
+                abilitysearch = pagecontent.find("span", string="Ability")
+            parent1 = abilitysearch.parent
+            parent2 = parent1.parent
+            parent3 = parent2.parent
+            allabilities = parent3.find_all('td')[0]
+            isolatedabilities = allabilities.find_all('a')
+            secondaryability = isolatedabilities[-1]
+            secondaryabilityrefined = secondaryability.get_text().replace('\xa0','').replace('\n','')
+            return (secondaryabilityrefined)
+
+        def get_hidden_ability():
+            abilitysearch = pagecontent.find('small', string=' Hidden Ability')
+            if str(abilitysearch) == 'None':
+                abilitysearch = pagecontent.find('span', string='Abilities')
+                parent1 = abilitysearch.parent
+                parent2 = parent1.parent
+                parent3 = parent2.parent
+                abilitygroup = parent3.find_all('span')[-4]
+                hiddenability = abilitygroup.get_text().replace('\xa0','').replace('\n','')
+            else:
+                hiddenparent = abilitysearch.parent
+                hiddenability = hiddenparent.get_text().replace('\xa0','').replace('\n','').replace('Hidden Ability','').strip()
+                #abilitysearch = abilitysearch.get_text
+            return (hiddenability)
+
 
         def get_category():
             categoryraw = pagecontent.find_all('span')[5]
@@ -85,20 +113,40 @@ def jsonmake():
             colorclear = color.replace("Other forms may have other colors.","")
             return(colorclear)
 
-        def get_egg_group():
-            egggroups = []
-            eggsearch = pagecontent.find("span", string="Egg Groups")
+        def get_primary_egg_group():
+            eggsearch = pagecontent.find("span", string="Egg Group")
             if str(eggsearch) == 'None':
-                eggsearch = pagecontent.find("span", string="Egg Group")
-            parent1 = eggsearch.parent
-            parent2 = parent1.parent
-            parent3 = parent2.parent
-            eggraw = parent3.find_all("span")
-            for span in eggraw:
-                span = span.get_text().strip()
-                if (span != "Egg Group") and (span != "Egg Groups"):
-                    egggroups.append(span)
+                eggsearch = pagecontent.find("span", string="Egg Groups")
+                parent1 = eggsearch.parent
+                parent2 = parent1.parent
+                parent3 = parent2.parent
+                eggraw = parent3.find_all("span")
+                egggroups = eggraw[1].get_text().replace('\xa0','').replace('\n','').strip()
+            else:
+                parent1 = eggsearch.parent
+                parent2 = parent1.parent
+                parent3 = parent2.parent
+                eggraw = parent3.find_all("span")
+                egggroups = eggraw[1].get_text().replace('\xa0','').replace('\n','').strip()
             return(egggroups)
+
+        def get_secondary_egg_group():
+            eggsearch = pagecontent.find("span", string="Egg Group")
+            if str(eggsearch) == 'None':
+                eggsearch = pagecontent.find("span", string="Egg Groups")
+                parent1 = eggsearch.parent
+                parent2 = parent1.parent
+                parent3 = parent2.parent
+                eggraw = parent3.find_all("span")
+                egggroups = eggraw[-1].get_text().replace('\xa0','').replace('\n','').strip()
+            else:
+                parent1 = eggsearch.parent
+                parent2 = parent1.parent
+                parent3 = parent2.parent
+                eggraw = parent3.find_all("span")
+                egggroups = eggraw[-1].get_text().replace('\xa0','').replace('\n','').strip()
+            return(egggroups)
+
             
         def get_generation():
             #finds the first paragraph on the page
@@ -107,11 +155,11 @@ def jsonmake():
             Target_text_raw = re.search ('introduced in', str(firstparagraph))
             #isolates the "introduced in" substring
             startmarker = (Target_text_raw.span()[-1]) + 1
-            #adds the next 14 characters (the data we want) to the isolated "introduced in"
-            endmarker = startmarker + 14
+            #adds the next 15 characters (the data we want) to the isolated "introduced in"
+            endmarker = startmarker + 15
             #removes the "introduced in" from the combined string
             clippedparagraph = str(firstparagraph)[startmarker:endmarker]
-            generation = clippedparagraph.replace('.','').strip()
+            generation = clippedparagraph.replace('.','').replace('P','').strip()
             return generation
 
         pokedict = {
@@ -120,13 +168,23 @@ def jsonmake():
             "Primary Type" : get_primary_type(),
             "Secondary Type" : get_secondary_type(),
             "Generation" : get_generation(),
-            "Ability" : get_ability(),
+            "Primary Ability" : get_primary_ability(),
+            "Secondary Ability" : get_secondary_ability(),
+            'Hidden Ability' : get_hidden_ability(),
             "Category" : get_category(),
             "Height" : get_height(),
             "Weight" : get_weight(),
-            "Egg Group" : get_egg_group(),
+            "Primary Egg Group" : get_primary_egg_group(),
+            "Secondary Egg Group" : get_secondary_egg_group(),
             "Color" : get_color(),
         }
+        # if primary and secondary abilities match then that means the pokemon has no secondary ability, if so this line will input that info
+        if pokedict["Primary Ability"] == pokedict["Secondary Ability"]:
+            pokedict["Secondary Ability"] = "None"
+        if pokedict["Secondary Type"] == "Unknown":
+            pokedict["Secondary Type"] = "None"
+        if pokedict["Primary Egg Group"] == pokedict["Secondary Egg Group"]:
+            pokedict["Secondary Egg Group"] = "None"
         #adds the current pokemon to the list dictionary
         list[dexnumber] = pokedict
         website = nextpageaddress
@@ -135,7 +193,7 @@ def jsonmake():
         if nextpageaddress == "https://bulbapedia.bulbagarden.net//wiki/Bulbasaur_(Pok%C3%A9mon)":
             break
     #turns the list dictionary into a json file
-    print (list)
     with open('list.json', 'w', encoding='utf8') as f:
-        json.dump (list, f, indent=1)
+       json.dump (list, f, indent=1)
     print ('Done')
+jsonmake()

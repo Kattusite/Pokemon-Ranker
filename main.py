@@ -11,7 +11,7 @@ import jsonmaker
 rankedlist=[]
 listholder = {}
 #Python uses this list to denote the field names in the correct order
-fieldnameorder = ['Name','National Dex Number','Primary Type','Secondary Type','Generation','Ability', 'Category', 'Height', 'Weight', 'Egg Group', 'Color' ]
+fieldnameorder = ['Name','National Dex Number','Primary Type','Secondary Type','Generation','Ability', 'Category', 'Height', 'Weight', 'Primary Egg Group', 'Secondary Egg Group' 'Color' ]
 #checks to see if the pokemon data has already been stored, and then downloads it if not
 
 if path.exists('list.json') == False:
@@ -46,6 +46,5 @@ with open('rankedlist.csv', 'w', encoding='utf8') as csvfile:
     writer = csv.DictWriter(csvfile, fieldnames = fieldnameorder)
     writer.writeheader()
     writer.writerows(rankedlist)
+    print('Finished')
     
-
-print(rankedlist)
