@@ -75,7 +75,6 @@ def jsonmake():
             else:
                 hiddenparent = abilitysearch.parent
                 hiddenability = hiddenparent.get_text().replace('\xa0','').replace('\n','').replace('Hidden Ability','').strip()
-                #abilitysearch = abilitysearch.get_text
             return (hiddenability)
 
 
@@ -164,19 +163,18 @@ def jsonmake():
 
         pokedict = {
             "Name" : get_name(),
-            "National Dex Number" : dexnumber,
             "Primary Type" : get_primary_type(),
             "Secondary Type" : get_secondary_type(),
             "Generation" : get_generation(),
             "Primary Ability" : get_primary_ability(),
             "Secondary Ability" : get_secondary_ability(),
             'Hidden Ability' : get_hidden_ability(),
-            "Category" : get_category(),
             "Height" : get_height(),
             "Weight" : get_weight(),
             "Primary Egg Group" : get_primary_egg_group(),
             "Secondary Egg Group" : get_secondary_egg_group(),
             "Color" : get_color(),
+
         }
         # if primary and secondary abilities match then that means the pokemon has no secondary ability, if so this line will input that info
         if pokedict["Primary Ability"] == pokedict["Secondary Ability"]:
@@ -196,4 +194,3 @@ def jsonmake():
     with open('list.json', 'w', encoding='utf8') as f:
        json.dump (list, f, indent=1)
     print ('Done')
-jsonmake()

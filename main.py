@@ -11,12 +11,12 @@ import jsonmaker
 rankedlist=[]
 listholder = {}
 #Python uses this list to denote the field names in the correct order
-fieldnameorder = ['Name','National Dex Number','Primary Type','Secondary Type','Generation','Ability', 'Category', 'Height', 'Weight', 'Primary Egg Group', 'Secondary Egg Group' 'Color' ]
+fieldnameorder = ['Name','Primary Type','Secondary Type','Generation','Primary Ability', 'Secondary Ability', 'Hidden Ability', 'Height', 'Weight', 'Primary Egg Group', 'Secondary Egg Group', 'Color', ]
 #checks to see if the pokemon data has already been stored, and then downloads it if not
+
 
 if path.exists('list.json') == False:
     jsonmaker.jsonmake()
-
 
 def paste():
     user_input = input ('Paste pokemon here')
